@@ -34,6 +34,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.util.LineReader;
 
+// Copy of https://github.com/Karmasphere/lzo-java/blob/master/src/com/hadoop/mapred/DeprecatedLzoLineRecordReader.java
 @SuppressWarnings("deprecation")
 public class DeprecatedLzoLineRecordReaderForCombined implements RecordReader<LongWritable, Text> {
     private static final Log LOG = LogFactory.getLog(DeprecatedLzoLineRecordReaderForCombined.class);

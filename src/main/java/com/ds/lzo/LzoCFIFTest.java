@@ -3,6 +3,13 @@ package com.ds.lzo;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.PosixParser;
+
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProps;
@@ -27,6 +34,41 @@ public class LzoCFIFTest {
     private static final int MAX_CONCUR_STEPS = 6;
 
     /**
+     * Parse the args from the command line, and store the results in _commandLine
+     */
+    protected static CommandLine parseCommandLine( String[] args, Options options )
+    {
+        CommandLineParser parser = new PosixParser();
+
+        try
+        {
+            return( parser.parse( options, args ) );
+        }
+        catch (org.apache.commons.cli.ParseException e)
+        {
+            HelpFormatter help = new HelpFormatter();
+            help.printHelp(" ", "", getOptions(), "\n" + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get the command line arguments.
+     *
+     */
+    @SuppressWarnings("static-access")
+    protected static Options getOptions ()
+    {
+        Options options = new Options();
+
+        // Required options
+        options.addOption(OptionBuilder.withArgName("in").isRequired(true).hasArg(true).create("in"));
+        options.addOption(OptionBuilder.withArgName("out").isRequired(true).hasArg(true).create("out"));
+
+        return options;
+    }
+
+    /**
      * Main.
      * @throws IOException
      */
@@ -38,8 +80,15 @@ public class LzoCFIFTest {
 
     public void go(String[] args) throws IOException
     {
-        String inPath = args[ 1 ];
-        String outPath = args[ 2 ];
+//        String inPath = args[ 1 ];
+//        String outPath = args[ 2 ];
+
+        // Parse options from command line.
+        CommandLine commandLine = parseCommandLine(args, getOptions());
+        if (null == commandLine) { return; }
+
+        String inPath = commandLine.getOptionValue("in");
+        String outPath = commandLine.getOptionValue("out");
 
         Properties properties = new Properties();
         initConfig(properties);
@@ -62,12 +111,10 @@ public class LzoCFIFTest {
         wcPipe = new GroupBy( wcPipe, token );
         wcPipe = new Every( wcPipe, Fields.ALL, new Count(), Fields.ALL );
 
-        // connect the taps, pipes, etc., into a flow
-
         Flow flow = flowConnector.connect("wordCount", inTap, outTap, wcPipe);
         flow.complete();
 
-        System.out.println("performance test finished!");
+        System.out.println("all finished!");
     }
 
     public void initConfig(Properties props) {
